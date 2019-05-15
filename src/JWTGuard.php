@@ -12,11 +12,13 @@
 namespace Tymon\JWTAuth;
 
 use BadMethodCallException;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Traits\Macroable;
+use Tymon\JWTAuth\Events\JWTLogin;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Contracts\Auth\UserProvider;
 use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
@@ -49,6 +51,13 @@ class JWTGuard implements Guard
     protected $request;
 
     /**
+     * The Dispatcher instance.
+     *
+     * @var \Illuminate\Contracts\Events\Dispatcher
+     */
+    protected $events;
+
+    /**
      * Instantiate the class.
      *
      * @param  \Tymon\JWTAuth\JWT  $jwt
@@ -57,11 +66,12 @@ class JWTGuard implements Guard
      *
      * @return void
      */
-    public function __construct(JWT $jwt, UserProvider $provider, Request $request)
+    public function __construct(JWT $jwt, UserProvider $provider, Request $request, Dispatcher $events)
     {
         $this->jwt = $jwt;
         $this->provider = $provider;
         $this->request = $request;
+        $this->events = $events;
     }
 
     /**
@@ -141,6 +151,8 @@ class JWTGuard implements Guard
     {
         $token = $this->jwt->fromUser($user);
         $this->setToken($token)->setUser($user);
+
+        $this->events->dispatch(new JWTLogin($token, $user));
 
         return $token;
     }
@@ -443,5 +455,23 @@ class JWTGuard implements Guard
         }
 
         throw new BadMethodCallException("Method [$method] does not exist.");
+    }
+
+    /**
+     * @return Dispatcher
+     */
+    public function getEvents()
+    {
+        return $this->events;
+    }
+
+    /**
+     * @param Dispatcher $events
+     * @return JWTGuard
+     */
+    public function setEvents(Dispatcher $events)
+    {
+        $this->events = $events;
+        return $this;
     }
 }

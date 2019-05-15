@@ -11,7 +11,9 @@
 
 namespace Tymon\JWTAuth\Test;
 
+use Illuminate\Contracts\Events\Dispatcher;
 use Mockery;
+use Tymon\JWTAuth\Events\JWTLogin;
 use Tymon\JWTAuth\JWT;
 use Tymon\JWTAuth\Factory;
 use Tymon\JWTAuth\Payload;
@@ -37,13 +39,22 @@ class JWTGuardTest extends AbstractTestCase
      */
     protected $guard;
 
+    /**
+     * @var \Illuminate\Contracts\Events\Dispatcher|\Mockery\MockInterface
+     */
+    protected $events;
+
     public function setUp()
     {
         parent::setUp();
 
         $this->jwt = Mockery::mock(JWT::class);
         $this->provider = Mockery::mock(EloquentUserProvider::class);
-        $this->guard = new JWTGuard($this->jwt, $this->provider, Request::create('/foo', 'GET'));
+
+        $this->events = Mockery::mock(Dispatcher::class);
+        $this->events->shouldReceive('dispatch')->andReturn([]);
+
+        $this->guard = new JWTGuard($this->jwt, $this->provider, Request::create('/foo', 'GET'), $this->events);
     }
 
     /**
@@ -498,5 +509,32 @@ class JWTGuardTest extends AbstractTestCase
         });
 
         $this->assertEquals('bar', $this->guard->foo());
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_get_the_events()
+    {
+        $this->assertInstanceOf(Dispatcher::class, $this->guard->getEvents());
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_set_the_events()
+    {
+        $events = Mockery::mock(Dispatcher::class);
+        $this->assertInstanceOf(JWTGuard::class, $this->guard->setEvents($events));
+    }
+
+    /**
+     * @test
+     * @expectedException \BadMethodCallException
+     * @expectedExceptionMessage Method [inexistentMethod] does not exist.
+     */
+    public function it_should_throw_an_exception_because_the_metod_does_not_exist()
+    {
+        $this->guard->inexistentMethod();
     }
 }
