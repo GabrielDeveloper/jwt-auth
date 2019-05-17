@@ -23,6 +23,7 @@ use Tymon\JWTAuth\Http\Parser\Parser;
 use Tymon\JWTAuth\Test\Stubs\UserStub;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Contracts\Providers\Auth;
+use Illuminate\Support\Testing\Fakes\EventFake;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class JWTAuthTest extends AbstractTestCase
@@ -47,12 +48,21 @@ class JWTAuthTest extends AbstractTestCase
      */
     protected $jwtAuth;
 
+    /**
+     * @var \Illuminate\Support\Testing\Fakes\EventFake|\Mockery\MockInterface
+     */
+    protected $events;
+
     public function setUp()
     {
         $this->manager = Mockery::mock(Manager::class);
         $this->auth = Mockery::mock(Auth::class);
         $this->parser = Mockery::mock(Parser::class);
-        $this->jwtAuth = new JWTAuth($this->manager, $this->auth, $this->parser);
+
+        $this->events = Mockery::mock(EventFake::class);
+        $this->events->shouldReceive('dispatch')->andReturn([]);
+
+        $this->jwtAuth = new JWTAuth($this->manager, $this->auth, $this->parser, $this->events);
     }
 
     /** @test */

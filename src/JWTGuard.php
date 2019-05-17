@@ -12,7 +12,6 @@
 namespace Tymon\JWTAuth;
 
 use BadMethodCallException;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
@@ -21,6 +20,7 @@ use Illuminate\Support\Traits\Macroable;
 use Tymon\JWTAuth\Events\JWTLogin;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Contracts\Auth\UserProvider;
+use Illuminate\Contracts\Events\Dispatcher;
 use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class JWTGuard implements Guard
@@ -458,7 +458,7 @@ class JWTGuard implements Guard
     }
 
     /**
-     * @return Dispatcher
+     * @return \Illuminate\Contracts\Events\Dispatcher
      */
     public function getEvents()
     {
@@ -466,7 +466,7 @@ class JWTGuard implements Guard
     }
 
     /**
-     * @param Dispatcher $events
+     * @param \Illuminate\Contracts\Events\Dispatcher $events
      * @return JWTGuard
      */
     public function setEvents(Dispatcher $events)

@@ -11,15 +11,15 @@
 
 namespace Tymon\JWTAuth\Test;
 
-use Illuminate\Contracts\Events\Dispatcher;
 use Mockery;
-use Tymon\JWTAuth\Events\JWTLogin;
 use Tymon\JWTAuth\JWT;
 use Tymon\JWTAuth\Factory;
 use Tymon\JWTAuth\Payload;
 use Tymon\JWTAuth\JWTGuard;
 use Illuminate\Http\Request;
 use Illuminate\Auth\EloquentUserProvider;
+use Illuminate\Support\Testing\Fakes\EventFake;
+use Illuminate\Contracts\Events\Dispatcher;
 use Tymon\JWTAuth\Test\Stubs\LaravelUserStub;
 
 class JWTGuardTest extends AbstractTestCase
@@ -40,7 +40,7 @@ class JWTGuardTest extends AbstractTestCase
     protected $guard;
 
     /**
-     * @var \Illuminate\Contracts\Events\Dispatcher|\Mockery\MockInterface
+     * @var \Illuminate\Support\Testing\Fakes\EventFake|\Mockery\MockInterface
      */
     protected $events;
 
@@ -51,7 +51,7 @@ class JWTGuardTest extends AbstractTestCase
         $this->jwt = Mockery::mock(JWT::class);
         $this->provider = Mockery::mock(EloquentUserProvider::class);
 
-        $this->events = Mockery::mock(Dispatcher::class);
+        $this->events = Mockery::mock(EventFake::class);
         $this->events->shouldReceive('dispatch')->andReturn([]);
 
         $this->guard = new JWTGuard($this->jwt, $this->provider, Request::create('/foo', 'GET'), $this->events);
@@ -524,7 +524,7 @@ class JWTGuardTest extends AbstractTestCase
      */
     public function it_should_set_the_events()
     {
-        $events = Mockery::mock(Dispatcher::class);
+        $events = Mockery::mock(EventFake::class);
         $this->assertInstanceOf(JWTGuard::class, $this->guard->setEvents($events));
     }
 

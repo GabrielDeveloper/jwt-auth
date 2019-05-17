@@ -13,10 +13,12 @@ namespace Tymon\JWTAuth;
 
 use BadMethodCallException;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Events\JWTLogin;
 use Tymon\JWTAuth\Http\Parser\Parser;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Tymon\JWTAuth\Support\CustomClaims;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Contracts\Events\Dispatcher;
 
 class JWT
 {
@@ -51,17 +53,26 @@ class JWT
     protected $lockSubject = true;
 
     /**
+     * The Dispatcher instance.
+     *
+     * @var \Illuminate\Contracts\Events\Dispatcher
+     */
+    protected $events;
+
+    /**
      * JWT constructor.
      *
      * @param  \Tymon\JWTAuth\Manager  $manager
      * @param  \Tymon\JWTAuth\Http\Parser\Parser  $parser
+     * @param  \Illuminate\Contracts\Events\Dispatcher  $events
      *
      * @return void
      */
-    public function __construct(Manager $manager, Parser $parser)
+    public function __construct(Manager $manager, Parser $parser, Dispatcher $events)
     {
         $this->manager = $manager;
         $this->parser = $parser;
+        $this->events = $events;
     }
 
     /**
@@ -87,7 +98,10 @@ class JWT
      */
     public function fromUser(JWTSubject $user)
     {
-        return $this->fromSubject($user);
+        $token = $this->fromSubject($user);
+        $this->events->dispatch(new JWTLogin($user, $token));
+
+        return $token;
     }
 
     /**

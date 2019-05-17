@@ -11,6 +11,7 @@
 
 namespace Tymon\JWTAuth;
 
+use Illuminate\Contracts\Events\Dispatcher;
 use Tymon\JWTAuth\Http\Parser\Parser;
 use Tymon\JWTAuth\Contracts\Providers\Auth;
 
@@ -32,9 +33,9 @@ class JWTAuth extends JWT
      *
      * @return void
      */
-    public function __construct(Manager $manager, Auth $auth, Parser $parser)
+    public function __construct(Manager $manager, Auth $auth, Parser $parser, Dispatcher $events)
     {
-        parent::__construct($manager, $parser);
+        parent::__construct($manager, $parser, $events);
         $this->auth = $auth;
     }
 
